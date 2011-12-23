@@ -1,0 +1,17 @@
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\bin\Debug\remotingWorker.exe.config
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\bin\Debug\remotingWorker.exe
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\bin\Debug\remotingWorker.pdb
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\bin\Debug\JSLib.dll
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\bin\Debug\JSLib.pdb
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.csprojResolveAssemblyReference.cache
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.exe
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.pdb
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.exe.config
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.exe
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.pdb
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.exe.config
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.exe
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\remotingWorker.pdb
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.csprojResolveAssemblyReference.cache
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.exe
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\remotingWorker\obj\Debug\remotingWorker.pdb

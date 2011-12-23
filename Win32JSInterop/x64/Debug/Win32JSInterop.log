@@ -1,0 +1,22 @@
+﻿Build started 12/12/2011 5:17:50 PM.
+     1>Project "C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\Win32JSInterop\Win32JSInterop.vcxproj" on node 2 (build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061: The "SetEnv" task could not be instantiated from "Microsoft.Build.CppTasks.Common.v110, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a". 
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061: System.TypeLoadException: Could not load type 'System.Runtime.CompilerServices.ExtensionAttribute' from assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.ModuleHandle.ResolveMethod(RuntimeModule module, Int32 methodToken, IntPtr* typeInstArgs, Int32 typeInstCount, IntPtr* methodInstArgs, Int32 methodInstCount)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.ModuleHandle.ResolveMethodHandleInternalCore(RuntimeModule module, Int32 methodToken, IntPtr[] typeInstantiationContext, Int32 typeInstCount, IntPtr[] methodInstantiationContext, Int32 methodInstCount)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.ModuleHandle.ResolveMethodHandleInternal(RuntimeModule module, Int32 methodToken, RuntimeTypeHandle[] typeInstantiationContext, RuntimeTypeHandle[] methodInstantiationContext)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Reflection.CustomAttributeData..ctor(RuntimeModule scope, CustomAttributeRecord caRecord)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Reflection.CustomAttributeData.GetCustomAttributes(RuntimeModule module, Int32 tkTarget)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Reflection.CustomAttributeData.GetCustomAttributesInternal(RuntimeAssembly target)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Reflection.RuntimeAssembly.GetCustomAttributesData()
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Reflection.CustomAttributeData.GetCustomAttributes(Assembly target)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Resources.ManifestBasedResourceGroveler.GetNeutralResourcesLanguage(Assembly a, UltimateResourceFallbackLocation& fallbackLocation)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Resources.ResourceManager.CommonSatelliteAssemblyInit()
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at System.Resources.ResourceManager..ctor(String baseName, Assembly assembly)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4061:    at Microsoft.Build.CPPTasks.SetEnv..ctor()
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.targets(50,5): error MSB4060: The "SetEnv" task has been declared or used incorrectly, or failed during construction. Check the spelling of the task name and the assembly name.
+     1>Done Building Project "C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\Win32JSInterop\Win32JSInterop.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.01
