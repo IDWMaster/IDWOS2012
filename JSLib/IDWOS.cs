@@ -143,8 +143,11 @@ namespace JSLib
         {
             mpass mp = sender as mpass;
             System.Threading.Thread.Sleep(mp.timeout);
-            
-                interruptfunctions.Add(mp.function);
+
+            JSMarshaller marshal = new JSMarshaller();
+            marshal.ptr = mp.function;
+            marshal.args = new object[0];
+                interruptfunctions.Add(marshal);
                 mvent.Set();
             
         }
@@ -165,8 +168,26 @@ namespace JSLib
             return IntPtr.Zero;
             
         }
-        List<JSFunctionPtr> interruptfunctions = new List<JSFunctionPtr>();
+        class JSMarshaller
+        {
+            public JSFunctionPtr ptr;
+            public object[] args;
+            public bool DeleteAfterExecution = true;
+        }
+        List<JSMarshaller> interruptfunctions = new List<JSMarshaller>();
         List<JSFunctionPtr> deletememes = new List<JSFunctionPtr>();
+        public JSFunctionPtr recvDgate;
+        IntPtr setRecvDgate(int len, IntPtr args)
+        {
+            if (recvDgate != null)
+            {
+                vm.DisposeFunctionPtr(recvDgate);
+                recvDgate = null;
+            }
+            recvDgate = vm.Deserialize(len, args)[0] as JSFunctionPtr;
+            return IntPtr.Zero;
+            
+        }
         IntPtr KernelSpinWait(int len,IntPtr args)
         {
             vm.Deserialize(len, args);
@@ -180,10 +201,22 @@ namespace JSLib
                 mvent.Reset();
                 mvent.WaitOne();
             }
-            JSFunctionPtr func = interruptfunctions[0];
+            JSMarshaller func = interruptfunctions[0];
+            if (func.ptr == null)
+            {
+                vm.InvokeMethod(recvDgate, this, func.args);
+            
+            }
+            else
+            {
+                vm.InvokeMethod(func.ptr, this, func.args);
+            }
             interruptfunctions.RemoveAt(0);
-            deletememes.Add(func);
-            return vm.Serialize(this,func);    
+            if (func.DeleteAfterExecution)
+            {
+                deletememes.Add(func.ptr);
+            }
+            return IntPtr.Zero;    
         }
         #region External functions
         public List<ExpFunction> Funcmappings = new List<ExpFunction>();
@@ -255,10 +288,100 @@ namespace JSLib
                
           
         }
+        bool eventthreadrunning = false;
+        class JSEvent
+        {
+            public int timeout;
+            public JSMarshaller marshaller;
+            public bool repeating = false;
+        }
+        List<JSEvent> events = new List<JSEvent>();
+        void eventthread()
+        {
+            while (true)
+            {
+                if (events.Count > 0)
+                {
+                    JSEvent tvent = null;
+                    int min = int.MaxValue;
+                    for (int i = 0; i < events.Count; i++)
+                    {
+                        if (events[i].timeout <= min)
+                        {
+                            min = events[i].timeout;
+                            tvent = events[i];
+                        }
+                    }
+                    if (!tvent.repeating)
+                    {
+                        events.Remove(tvent);
+                    }
+                    eventTimer.WaitOne(tvent.timeout);
+                    interruptfunctions.Add(tvent.marshaller);
+                    mvent.Set();
+                    eventTimer.Reset();
+                }
+                else
+                {
+                    eventTimer.Reset();
+                    eventTimer.WaitOne();
+                }
+            }
+        }
+        ManualResetEvent eventTimer = new ManualResetEvent(false);
+        Dictionary<int, JSFunctionPtr> intervals = new Dictionary<int, JSFunctionPtr>();
+        int ivalid = 0;
+        IntPtr setInterval(int count, IntPtr args)
+        {
+            object[] data = vm.Deserialize(count, args);
+            JSFunctionPtr ptr = data[0] as JSFunctionPtr;
+            if (!eventthreadrunning)
+            {
+                eventthreadrunning = true;
+                System.Threading.Thread mthread = new Thread(eventthread);
+                mthread.Start();
+            }
+            JSEvent tt = new JSEvent();
+            JSMarshaller marshal = new JSMarshaller();
+            marshal.args = new object[0];
+            marshal.DeleteAfterExecution = false;
+            marshal.ptr = ptr;
+            tt.marshaller = marshal;
+            tt.timeout = (int)data[1];
+            tt.repeating = true;
+            events.Add(tt);
+            eventTimer.Set();
+            intervals.Add(ivalid, ptr);
+            ivalid++;
+            return vm.Serialize(this, ivalid-1);
+
+        }
+        /// <summary>
+        /// Dispatches a JavaScript function to the main thread
+        /// </summary>
+        /// <param name="ptr">The function pointer</param>
+        /// <param name="args">The arguments to pass to the function</param>
+        /// <param name="deleteAfterExec">Whether or not this pointer should be deleted after the function has been called</param>
+        public void DispatchFunction(JSFunctionPtr ptr,bool deleteAfterExec, params object[] args)
+        {
+            
+            JSMarshaller marshal = new JSMarshaller();
+            marshal.args = args;
+            marshal.DeleteAfterExecution = deleteAfterExec;
+            marshal.ptr = ptr;
+            interruptfunctions.Add(marshal);
+            mvent.Set();
+        }
+        public Kernel parent;
+        IntPtr postMessage(int count, IntPtr msg)
+        {
+            parent.DispatchFunction(null, false, vm.Deserialize(count, msg));
+            return IntPtr.Zero;
+        }
         #endregion
         public void Run(string code)
         {
-            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod },code);
+            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod, setRecvDgate, setInterval, postMessage},code);
         }
        public JavaScriptVM vm;
         public void Initialize()

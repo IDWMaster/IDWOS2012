@@ -1,7 +1,6 @@
 ﻿///<reference path="WebGLLibs.js"/>
 ///<reference path="IDWOS_platform.js"/>
 ///<reference path="IDWOS_core.js"/>
-///IDWOS-LINKER-INCLUDE:IDWOS_platform.js
 ///IDWOS-LINKER-INCLUDE:IDWOS_core.js
 
 
@@ -59,18 +58,17 @@ function main() {
     
     var intervalID = null;
     var ourID = currentID;
-    workerthread.SetNtfyDataReceived(function (data) {
+    setRecvDgate(function (data) {
         
         if (data.ID == ourID) {
             if (data.cmd == 2) {
-                intervalID = event.data.value;
+                intervalID = data.value;
             }else {
                 vertbuffer.SetRotation(data.x, data.y, data.z);
             }
         }
     });
-    workerthread.Start({ ID: ourID, cmd: 0, X: 0.0, Y: 0.0, Z: 0.0, cx: 0.0, cy: 0.01, cz: 0.0 });
-
-    currentID++;
+   
+    workerthread.Start({ ID: ourID, cmd: 0, X: 0.0, Y: 0.0, Z: 0.0, cx: 0.0, cy: 0.01, cz: 0.0, period:10 });
     InitEventLoop();
 }

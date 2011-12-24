@@ -131,23 +131,27 @@ namespace JSTester
         class VirtualThread
         {
             Kernel mkernl;
+            ManualResetEvent mvent = new ManualResetEvent(false);
             void thetar(object sender)
             {
                 StreamReader mreader = new StreamReader(sender as String);
                 string code = Link(mreader.ReadToEnd());
                 mreader.Dispose();
                 mkernl = new Kernel();
+                mkernl.parent = mnul;
                 mkernl.Initialize();
+                mvent.Set();
                 mkernl.Run(code);
             }
             public VirtualThread(string src)
             {
                 System.Threading.Thread mthread = new Thread(thetar);
                 mthread.Start(src);
+                mvent.WaitOne();
             }
             public void postMessage(object data)
             {
-                throw new NotImplementedException("TODO: Implement this");
+                mkernl.DispatchFunction(null,false, data);
             }
         }
        

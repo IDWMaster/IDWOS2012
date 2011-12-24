@@ -32,6 +32,14 @@ namespace JSLib
         static extern IntPtr NativeAlloc(IntPtr instance, int bytes);
         [DllImport("JSInteropLib64.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr CreateVM();
+        [DllImport("JSInteropLib64.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        static extern void CallFunction(IntPtr instance, IntPtr args, int method);
+        public void InvokeMethod(JSFunctionPtr functionPtr,Kernel kernel, object[] args)
+        {
+          
+                CallFunction(inst, SerializeDirect(kernel, args), functionPtr.value);
+           
+        }
         public IntPtr Malloc(int bytes)
         {
             return NativeAlloc(inst,bytes);
@@ -60,6 +68,7 @@ namespace JSLib
         }
         void SerializeManaged(BinaryWriter mwriter, Kernel kernel, object value)
         {
+            
             if (value == null)
             {
                 mwriter.Write((byte)2);
@@ -67,6 +76,19 @@ namespace JSLib
                 return;
             }
             Type reflectedtype = value.GetType();
+            if (reflectedtype == typeof(Dictionary<string, object>))
+            {
+                mwriter.Write((byte)0);
+                Dictionary<string, object> mdict = value as Dictionary<string, object>;
+                mwriter.Write(mdict.Count);
+                foreach (KeyValuePair<string, object> et in mdict)
+                {
+                    mwriter.Write(Encoding.UTF8.GetBytes(et.Key).Length);
+                    mwriter.Write(Encoding.UTF8.GetBytes(et.Key));
+                    SerializeManaged(mwriter, kernel, et.Value);
+                }
+                return;
+            }
             if (reflectedtype == typeof(double))
             {
                 mwriter.Write((byte)5);
@@ -111,6 +133,21 @@ namespace JSLib
             mwriter.Write((byte)2);
             mwriter.Write(kernel.cpointer);
             kernel.cpointer++;
+        }
+        public IntPtr SerializeDirect(Kernel kern, object[] args)
+        {
+            MemoryStream mstream = new MemoryStream();
+            BinaryWriter mwriter = new BinaryWriter(mstream);
+            mwriter.Write(args.Length);
+
+            foreach (object et in args)
+            {
+                SerializeManaged(mwriter, kern, et);
+            }
+            byte[] data = mstream.ToArray();
+            IntPtr retval = NativeAlloc(inst, data.Length);
+            Marshal.Copy(data, 0, retval, data.Length);
+            return retval;
         }
         public IntPtr Serialize(Kernel kern,params object[] args)
         {

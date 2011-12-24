@@ -1,9 +1,15 @@
 ﻿///<reference path="IDWOS_core.js" />
+///IDWOS-LINKER-INCLUDE:IDWOS_core.js
 commands = new Array();
-onmessage = function (event) {
-    var input = event.data;
+//In regular browsers, this is onmessage = function(event)
+//In a browser, to get actual event data
+//we wouldneed to ddeclare input = event.data instead of input = event;
+setRecvDgate(function (event) {
+    var input = event;
     //Periodic rotation
+   
     if (input.cmd == 0) {
+       
         var X = input.X;
         var Y = input.Y;
         var Z = input.Z;
@@ -19,7 +25,7 @@ onmessage = function (event) {
                 x: X,
                 y: Y,
                 z: Z,
-                ID: event.data.ID
+                ID: event.ID
             }
             output.ThreadID = input.ThreadID;
             postMessage(output);
@@ -28,10 +34,11 @@ onmessage = function (event) {
         var outputdata = {
             cmd: 2,
             value: ival,
-            ID: event.data.ID
+            ID: event.ID
 
         };
         postMessage(outputdata);
     }
     //End periodic rotation
-}
+});
+InitEventLoop();

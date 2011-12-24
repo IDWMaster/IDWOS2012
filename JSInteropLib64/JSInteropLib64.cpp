@@ -160,6 +160,7 @@ public:
 		if(objID == 5) {
 		double mval;
 		memcpy(&mval,input+(*offsetptr),sizeof(double));
+		*offsetptr+=sizeof(double);
 		return Number::New(mval);
 		}
 		if(objID == 4) {
@@ -174,6 +175,7 @@ public:
 		(*offsetptr)+=sizeof(int);
 		char* txt = new char[stlen];
 		memcpy(txt,input+(*offsetptr),stlen);
+		*offsetptr+=stlen;
 		return String::New(txt,stlen);
 		}
 		if(objID == 2) {
@@ -192,6 +194,7 @@ public:
 			for(int i = 0;i<arraylen;i++) {
 				mray->Set(i,DeserializeObject(input,offsetptr));
 			}
+			return mray;
 		}
 		if(objID == 0) {
 			int32_t count;
@@ -207,10 +210,12 @@ public:
 			memcpy(str,input+(*offsetptr),stlen);
 			(*offsetptr)+=stlen;
 			Handle<Value> tval = DeserializeObject(input,offsetptr);
+			
 			rootobj->Set(String::New(str,stlen),tval);
 		}
 		return rootobj->NewInstance();
 		}
+		
 		}
 	static Handle<Value> InvokeManagedDelegate(const Arguments& args) {
 		//TODO: Get fastvector to work
@@ -296,7 +301,7 @@ extern "C" {
 		
 		
 		
-		__declspec(dllexport) void __cdecl __ClosePtr(VMInstance* instance,char* mray) {
+		__declspec(dllexport) void __cdecl __ClosePtr(VMInstance* instance,void* mray) {
 			instance->memallocator->unallocMem(mray);
 			
 		}
@@ -305,7 +310,38 @@ extern "C" {
 			instance->jsFuncPtrs.erase(ptr);
 		}
 		
+	__declspec(dllexport) void* __cdecl NativeAlloc(VMInstance* instance,int32_t count) {
+		//Allocate in chunks of 1024 bytes
+		//starting at 1024
+		int64_t blocksize = 1024;
+		while(blocksize<count) {
+			blocksize+=1024;
+		}
+		return instance->memallocator->allocMem(blocksize);
+	//return malloc(count);
+	}
+		_declspec(dllexport) void __cdecl CallFunction(VMInstance* instance, char* args, int ptr) {
+			int32_t count = *(int32_t*)args;
+			int64_t offset = sizeof(int32_t);
+			
+			Handle<Value>* cray = (Handle<Value>*)NativeAlloc(instance,sizeof(Handle<Value>)*count);
+			
+			for(int32_t i = 0;i<count;i++) {
+				cray[i] = instance->DeserializeObject(args,&offset);
+			}
+		
+			Local<Context> ctxt = Context::GetCurrent();
+			instance->jsFuncPtrs[ptr].mfunc->Call(ctxt->Global(),count,cray);
+			for(int32_t i = 0;i<count;i++) {
+				cray[i]->~Value();
+			}
+			
+			__ClosePtr(instance,args);
+			
+			__ClosePtr(instance,cray);
+			
 
+		}
 
 
 
@@ -319,16 +355,6 @@ extern "C" {
 	Persistent<Context> context;
 	};
 	
-	__declspec(dllexport) void* __cdecl NativeAlloc(VMInstance* instance,int32_t count) {
-		//Allocate in chunks of 1024 bytes
-		//starting at 1024
-		int64_t blocksize = 1024;
-		while(blocksize<count) {
-			blocksize+=1024;
-		}
-		return instance->memallocator->allocMem(blocksize);
-	//return malloc(count);
-	}
 	_declspec(dllexport) void* __cdecl CreateVM() {
 		return new VMInstance();
 	}

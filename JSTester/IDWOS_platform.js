@@ -2,7 +2,7 @@
 
 function InitEventLoop() {
     while (true) {
-        KernelSpinWait()();
+        KernelSpinWait();
     }
 }
 

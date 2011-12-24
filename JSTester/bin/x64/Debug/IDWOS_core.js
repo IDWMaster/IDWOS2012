@@ -1,10 +1,12 @@
 ﻿///<reference path="IDWOS_platform.js" />
+///IDWOS-LINKER-INCLUDE:IDWOS_platform.js
 //BEGIN IDWOS CORE SPECIFICATION
 CreateShaderFunction = null;
 LoadTexture = null;
 DrawVertexBuffer = null;
 DrawShader = null;
 DrawTexture = null;
+PostMsg = null;
 currentID = 0;
 IDWOS = {
     Threading: {
@@ -22,7 +24,10 @@ IDWOS = {
                 ///<summary>Instructs the operating system to transition the thread to an executing state</summary>
                 ///<param name="data">Serializable data to send to the remote thread</param>
                 data.ThreadID = threadID;
-                this.ptr.postMessage(data);
+                if (PostMsg == null) {
+                    PostMsg = ResolveMethod(this.ptr,'postMessage');
+                }
+                InvokeDynamicMethod(this.ptr, PostMsg, data);
             }
             var mvent = null;
             this.SetNtfyDataReceived = function (callback) {
@@ -31,6 +36,7 @@ IDWOS = {
                 mvent = callback;
 
             }
+            
             this.ptr.onmessage = function (data) {
                 if (data.data.ThreadID == threadID) {
                     mvent(data.data);
