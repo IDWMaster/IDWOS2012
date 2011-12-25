@@ -149,28 +149,40 @@ namespace JSLib
             Marshal.Copy(data, 0, retval, data.Length);
             return retval;
         }
+        MemoryStream memorystream = new MemoryStream();
         public IntPtr Serialize(Kernel kern,params object[] args)
         {
-            MemoryStream mstream = new MemoryStream();
+            MemoryStream mstream = memorystream;
             BinaryWriter mwriter = new BinaryWriter(mstream);
             mwriter.Write(args.Length);
          
             foreach(object et in args) {
                 SerializeManaged(mwriter,kern, et);
             }
-            byte[] data = mstream.ToArray();
-            IntPtr retval = NativeAlloc(inst,data.Length);
-            Marshal.Copy(data, 0, retval, data.Length);
+            if (mstream.Length > memorycache.Length)
+            {
+                memorycache = new byte[mstream.Length];
+            }
+            mstream.Position = 0;
+            mstream.Read(memorycache, 0, (int)mstream.Length);
+            IntPtr retval = NativeAlloc(inst,(int)mstream.Length);
+            Marshal.Copy(memorycache, 0, retval, (int)mstream.Length);
+            mstream.SetLength(0);
             return retval;
         }
+        byte[] memorycache = new byte[0];
         public object[] Deserialize(int count, IntPtr args)
         {
-            byte[] data = new byte[count];
-            System.Runtime.InteropServices.Marshal.Copy(args, data, 0, data.Length);
+            if (memorycache.Length < count)
+            {
+                memorycache = new byte[count];
+            }
+            
+            System.Runtime.InteropServices.Marshal.Copy(args, memorycache, 0, count);
             DeletePtr(args);
-            MemoryStream mstream = new MemoryStream(data);
+            MemoryStream mstream = new MemoryStream(memorycache);
             List<object> mstrs = new List<object>();
-            while (mstream.Position != mstream.Length)
+            while (mstream.Position != count)
             {
                 mstrs.Add(DeserializeManaged(mstream));
             }

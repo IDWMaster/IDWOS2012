@@ -41,6 +41,7 @@ struct VMObject {
 	
 	static void UnlockFuncPtrs(HANDLE mutex) {
 		mtx.unlock();
+		return;
 	ReleaseMutex(mutex);
 		   CloseHandle(mutex);
 	};
@@ -297,9 +298,6 @@ public:
 //BEGIN EXTERN functions
 extern "C" {
 		
-		//TODO: Fix memory leak on Deserialize
-		
-		
 		
 		__declspec(dllexport) void __cdecl __ClosePtr(VMInstance* instance,void* mray) {
 			instance->memallocator->unallocMem(mray);
@@ -331,7 +329,7 @@ extern "C" {
 			}
 		
 			Local<Context> ctxt = Context::GetCurrent();
-			instance->jsFuncPtrs[ptr].mfunc->Call(ctxt->Global(),count,cray);
+			Local<Value> retval = instance->jsFuncPtrs[ptr].mfunc->Call(ctxt->Global(),count,cray);
 			for(int32_t i = 0;i<count;i++) {
 				cray[i]->~Value();
 			}

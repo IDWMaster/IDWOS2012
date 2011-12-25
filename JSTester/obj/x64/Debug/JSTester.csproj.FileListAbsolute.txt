@@ -43,3 +43,7 @@ C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Deb
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_core.js
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_platform.js
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\webworker.js
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS.js
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_core.js
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_platform.js
+D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\webworker.js
