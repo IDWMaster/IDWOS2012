@@ -7,7 +7,7 @@ commands = new Array();
 setRecvDgate(function (event) {
     var input = event;
     //Periodic rotation
-   
+    
     if (input.cmd == 0) {
        
         var X = input.X;

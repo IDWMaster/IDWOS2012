@@ -39,8 +39,27 @@ namespace JSTester
             {
                 renderer = new GLRenderer();
             }
+            renderer.defaultKeyboard.onKeyDown += new keyboardeventargs(defaultKeyboard_onKeyDown);
+            renderer.defaultKeyboard.onKeyUp += new keyboardeventargs(defaultKeyboard_onKeyUp);
+            
             renderer.cameraPosition.Z = -5;
             return renderer;
+        }
+        static JSFunctionPtr dgate_keyup;
+        static void defaultKeyboard_onKeyUp(string KeyName)
+        {
+            if (dgate_keyup != null)
+            {
+                mnul.DispatchFunction(dgate_keyup, false, KeyName);
+            }
+        }
+        static JSFunctionPtr dgate_keydown;
+        static void defaultKeyboard_onKeyDown(string KeyName)
+        {
+            if (dgate_keydown != null)
+            {
+                mnul.DispatchFunction(dgate_keydown, false, KeyName);
+            }
         }
         static Bitmap CreateBitmap(string filename)
         {
@@ -101,6 +120,56 @@ namespace JSTester
             Renderer vertbuffer = mnul.objPtrs[ptr] as Renderer;
             vertbuffer.cameraPosition = new Vector3D((float)X, (float)Y, (float)Z);
         }
+        class ManagedGraphics : IDisposable
+        {
+            public ManagedGraphics(Bitmap mmap)
+            {
+                mfix = Graphics.FromImage(mmap);
+            }
+            public void Clear(int a, int r, int b, int g)
+            {
+                mfix.Clear(Color.FromArgb(a, r, g, b));
+            }
+            public void DrawString(int a, int r, int g, int b, string text, float size, int x, int y)
+            {
+                mfix.DrawString(text, new Font(FontFamily.GenericMonospace, size), new SolidBrush(Color.FromArgb(a, r, g, b)), new PointF(x, y));
+            }
+            public void FillRect(int a, int r, int g, int b, int x, int y, int w, int h)
+            {
+                mfix.FillRectangle(new SolidBrush(Color.FromArgb(a, r, g, b)), new Rectangle(x, y, w, h));
+            }
+            public void DrawImage(Bitmap mmap, int x, int y, int width, int height)
+            {
+                mfix.DrawImage(mmap, new Rectangle(x, y, width, height));
+
+            }
+            Graphics mfix;
+            public void Dispose()
+            {
+                mfix.Dispose();
+            }
+        }
+        /// <summary>
+        /// OPCODE 6
+        /// </summary>
+        /// <param name="mmap"></param>
+        /// <returns></returns>
+
+        static ManagedGraphics CreateGraphics(int ptr)
+        {
+            return new ManagedGraphics(mnul.objPtrs[ptr] as Bitmap);
+
+        }
+        /// <summary>
+        /// OPCODE 7
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        static Bitmap createBitmapFromWidthHeight(int width, int height)
+        {
+            return new Bitmap(width, height);
+        }
         #endregion
         static JavaScriptVM vm;
         static Kernel mnul = new Kernel();
@@ -153,18 +222,33 @@ namespace JSTester
             {
                 mkernl.DispatchFunction(null,false, data);
             }
+            
+            
         }
-       
+        /// <summary>
+        /// OPCODE 8
+        /// </summary>
+        /// <param name="funcptr"></param>
+        static void onKeyPress(JSFunctionPtr funcptr)
+        {
+            dgate_keydown = funcptr;
+        }
+        /// <summary>
+        /// OPCODE 9
+        /// </summary>
+        /// <param name="funcptr"></param>
+        static void onKeyUp(JSFunctionPtr funcptr)
+        {
+            dgate_keyup = funcptr;
+
+        }
         static void Main(string[] args)
         {
             Console.WriteLine("IDOWS 2012 - Secure Execution Environment");
-            foreach (MethodInfo et in typeof(Program).GetMethods())
-            {
-                Console.WriteLine(et);
-            }
+            
             StreamReader mreader = new StreamReader("IDWOS.js");
 
-            mnul.TranslatedFunctions.AddRange(new MethodInfo[] { ResolveMethod("CreateRenderer"), ResolveMethod("CreateBitmap"),ResolveMethod("CreateVertexBuffer"), ResolveMethod("RotateBuffer"), ResolveMethod("SetCameraPosition"),ResolveMethod("createThread") });
+            mnul.TranslatedFunctions.AddRange(new MethodInfo[] { ResolveMethod("CreateRenderer"), ResolveMethod("CreateBitmap"),ResolveMethod("CreateVertexBuffer"), ResolveMethod("RotateBuffer"), ResolveMethod("SetCameraPosition"),ResolveMethod("createThread"), ResolveMethod("CreateGraphics"),ResolveMethod("createBitmapFromWidthHeight"), ResolveMethod("onKeyPress"),ResolveMethod("onKeyUp") });
             mnul.Initialize();
             vm = mnul.vm;
             string code = Link(mreader.ReadToEnd() + "\nmain();");

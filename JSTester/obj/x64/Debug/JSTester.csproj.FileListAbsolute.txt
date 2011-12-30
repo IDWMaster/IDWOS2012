@@ -26,10 +26,7 @@ C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Deb
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\3DLib_OpenGL.pdb
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\OpenTK.xml
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\obj\x64\Debug\JSTester.csprojResolveAssemblyReference.cache
-C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\3DAPI.dll
-C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\3DLib_OpenGL.dll
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\JSTester.exe.config
-C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\DirectXLib.dll
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\DirectXLib.pdb
 C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\basicDXShader.txt
 D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\basicDXShader.txt
@@ -47,3 +44,6 @@ D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Deb
 D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_core.js
 D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\IDWOS_platform.js
 D:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\webworker.js
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\3DAPI.dll
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\3DLib_OpenGL.dll
+C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSTester\bin\x64\Debug\DirectXLib.dll

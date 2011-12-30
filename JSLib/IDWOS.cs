@@ -109,7 +109,8 @@ namespace JSLib
         /// <returns></returns>
         IntPtr Write(int len, IntPtr args)
         {
-            Console.Write(vm.Deserialize(len,args));
+            object[] realargs = vm.Deserialize(len,args);
+            Console.Write(realargs[0]);
 
             
             return IntPtr.Zero;
@@ -276,7 +277,7 @@ namespace JSLib
             {
                 if (targs[i].GetType() == typeof(int))
                 {
-                    if (rameters[i].ParameterType != typeof(int))
+                    if (rameters[i].ParameterType != typeof(int) & rameters[i].ParameterType !=typeof(float))
                     {
                         targs[i] = objPtrs[(int)targs[i]];
                     }
@@ -378,10 +379,36 @@ namespace JSLib
             parent.DispatchFunction(null, false, vm.Deserialize(count, msg));
             return IntPtr.Zero;
         }
+        IntPtr free(int count, IntPtr args)
+        {
+            object[] ptrs = vm.Deserialize(count, args);
+            foreach (int et in ptrs)
+            {
+                Type mtype = objPtrs[et].GetType();
+                MethodInfo dmthd = mtype.GetMethod("Dispose");
+                if (dmthd != null)
+                {
+                    dmthd.Invoke(objPtrs[et], null);
+                }
+                objPtrs.Remove(et);
+            }
+            return IntPtr.Zero;
+        }
+        IntPtr weaken(int count, IntPtr args)
+        {
+            object[] ptrs = vm.Deserialize(count, args);
+            foreach (int et in ptrs)
+            {
+              
+                objPtrs.Remove(et);
+            }
+            return IntPtr.Zero;
+
+        }
         #endregion
         public void Run(string code)
         {
-            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod, setRecvDgate, setInterval, postMessage},code);
+            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod, setRecvDgate, setInterval, postMessage,free, weaken},code);
         }
        public JavaScriptVM vm;
         public void Initialize()
