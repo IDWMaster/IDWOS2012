@@ -9,18 +9,44 @@ DrawTexture = null;
 PostMsg = null;
 ClearDrawing = null;
 currentID = 0;
+var threads = { hasInitialized : false };
 IDWOS = {
     Threading: {
     ///<summary>Provides multitasking functionality in a JavaScript environment</summary>
-        Thread: function (scriptURL, threadSecurity) {
+        ThreadContext: {
+        
+            
+            Initialize: function (data) {
+            ///<summary>Initializes a threading context for a worker thread</summary>
+            ///<param name="data">The data parameter passed into this thread's starter function</param>
+                KernelThreadID = data.ThreadID;
+            },
+            SendMsg: function (data) {
+            ///<summary>Sends a notification to the kernel</summary>
+            ///<param name="data">Data to be sent to the kernel</param>
+                data.ThreadID = KernelThreadID;
+                postMessage(data);
+            }
+            },
+    Thread: function (scriptURL, threadSecurity) {
             ///<summary>Creates a new thread</summary>
             ///<param name="scriptURL">The relative URL of the script to execute</param>
             ///<param name="threadSecurity">true if the thread handles potentially sensitive information and needs to run on the local machine, false if the thread should be allowed to run on any machine.</param>
-
+            this.OnDataReceived = function (data) {
+                Write('ERR: No interceptor defined');
+            };
             this.ptr = InvokeMethod(5, scriptURL);
             var threadID = currentID;
             currentID++;
-
+            threads[threadID] = this;
+            if (!threads.hasInitialized) {
+                setRecvDgate(function (data) {
+                   
+                    threads[data.ThreadID].OnDataReceived(data);
+                    
+                });
+                threads.hasInitialized = true;
+            }
             this.Start = function (data) {
                 ///<summary>Instructs the operating system to transition the thread to an executing state</summary>
                 ///<param name="data">Serializable data to send to the remote thread</param>
@@ -29,20 +55,10 @@ IDWOS = {
                     PostMsg = ResolveMethod(this.ptr,'postMessage');
                 }
                 InvokeDynamicMethod(this.ptr, PostMsg, data);
+                
             }
             var mvent = null;
-            this.SetNtfyDataReceived = function (callback) {
-                ///<summary>Sets a callback function to be called when data is received</summary>
-                ///<param name="callback">The callback function</param>
-                mvent = callback;
-
-            }
             
-            this.ptr.onmessage = function (data) {
-                if (data.data.ThreadID == threadID) {
-                    mvent(data.data);
-                }
-            }
         }
     },
     Graphics: {

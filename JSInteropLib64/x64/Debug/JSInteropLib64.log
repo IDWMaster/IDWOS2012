@@ -1,4 +1,4 @@
-﻿Build started 12/30/2011 10:18:44 AM.
+﻿Build started 12/30/2011 10:29:17 PM.
      1>Project "C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSInteropLib64\JSInteropLib64.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.CppBuild.targets(322,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
          JSInteropLib64.vcxproj -> C:\Users\Brian Bosak\Desktop\SCHOOL computer\Win32JSInterop\JSInteropLib64\..\JSTester\bin\x64\Debug\JSInteropLib64.dll
@@ -6,4 +6,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.09
+Time Elapsed 00:00:00.05

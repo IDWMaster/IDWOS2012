@@ -244,7 +244,7 @@ namespace JSTester
         }
         static void Main(string[] args)
         {
-            Console.WriteLine("IDOWS 2012 - Secure Execution Environment");
+            Console.WriteLine("DistVM - Secure Execution Environment");
             
             StreamReader mreader = new StreamReader("IDWOS.js");
 

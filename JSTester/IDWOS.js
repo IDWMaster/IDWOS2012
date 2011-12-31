@@ -1,5 +1,4 @@
-﻿///<reference path="WebGLLibs.js"/>
-///<reference path="IDWOS_platform.js"/>
+﻿///<reference path="IDWOS_platform.js"/>
 ///<reference path="IDWOS_core.js"/>
 ///IDWOS-LINKER-INCLUDE:IDWOS_core.js
 
@@ -60,20 +59,10 @@ function main() {
         FireAt(10, dorender);
 
     }
-    var workerthread = new IDWOS.Threading.Thread('webworker.js',true);
-    
+  
     var intervalID = null;
     var ourID = currentID;
-    setRecvDgate(function (data) {
-        
-        if (data.ID == ourID) {
-            if (data.cmd == 2) {
-                intervalID = data.value;
-            }else {
-                vertbuffer.SetRotation(data.x, data.y, data.z);
-            }
-        }
-    });
+  
     //BEGIN KERNEL INPUT/OUTPUT LOGIC
     
    
@@ -123,7 +112,19 @@ function main() {
 
     }
     InvokeMethod(8, keyDownInterrupt);
+    
     //END KERNEL INPUT/OUTPUT LOGIC
-    //workerthread.Start({ ID: ourID, cmd: 0, X: 0.0, Y: 0.0, Z: 0.0, cx: 0.0, cy: 0.01, cz: 0.0, period:10 });
+   
+    var workerthread = new IDWOS.Threading.Thread('webworker.js', true);
+    workerthread.OnDataReceived = function (data) {
+        //Kernel request -- Write to console
+
+        if (data.opcode == 0) {
+            ltxt += data.text;
+            doupdate();
+        }
+    }
+    workerthread.Start({ arguments: 0 });
+    
     InitEventLoop();
 }
