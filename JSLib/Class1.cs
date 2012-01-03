@@ -34,6 +34,12 @@ namespace JSLib
         static extern IntPtr CreateVM();
         [DllImport("JSInteropLib64.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         static extern void CallFunction(IntPtr instance, IntPtr args, int method);
+        [DllImport("JSInteropLib64.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        static extern void ExpandMemory(IntPtr instance,ulong size);
+        public void ExpandMem(ulong size)
+        {
+            ExpandMemory(inst,size);
+        }
         public void InvokeMethod(JSFunctionPtr functionPtr,Kernel kernel, object[] args)
         {
           
@@ -182,7 +188,7 @@ namespace JSLib
             DeletePtr(args);
             MemoryStream mstream = new MemoryStream(memorycache);
             List<object> mstrs = new List<object>();
-            while (mstream.Position != count)
+            while (mstream.Position < count)
             {
                 mstrs.Add(DeserializeManaged(mstream));
             }

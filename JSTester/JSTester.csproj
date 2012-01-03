@@ -59,7 +59,8 @@
     <Reference Include="3DAPI">
       <HintPath>..\..\3DAPI\dapirenderer\3DLib_OpenGL\bin\Debug\3DAPI.dll</HintPath>
     </Reference>
-    <Reference Include="3DLib_OpenGL">
+    <Reference Include="3DLib_OpenGL, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3DAPI\dapirenderer\3DLib_OpenGL\bin\Debug\3DLib_OpenGL.dll</HintPath>
     </Reference>
     <Reference Include="DirectXLib">
@@ -70,6 +71,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filesystem\crypthelpers.cs" />
+    <Compile Include="Filesystem\IndexedFS.cs" />
+    <Compile Include="Filesystem\MyClass.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -93,6 +97,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IDWOS_platform.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ls.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="pic.jpg">

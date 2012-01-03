@@ -296,10 +296,11 @@ namespace JSLib
             public JSMarshaller marshaller;
             public bool repeating = false;
         }
+        bool isrunning = true;
         List<JSEvent> events = new List<JSEvent>();
         void eventthread()
         {
-            while (true)
+            while (isrunning)
             {
                 if (events.Count > 0)
                 {
@@ -405,10 +406,26 @@ namespace JSLib
             return IntPtr.Zero;
 
         }
+        IntPtr malloc(int count, IntPtr args)
+        {
+            vm.ExpandMem((ulong)(int)vm.Deserialize(count, args)[0]);
+            return IntPtr.Zero;
+        }
         #endregion
         public void Run(string code)
         {
-            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod, setRecvDgate, setInterval, postMessage,free, weaken},code);
+            vm.Run(new JSFunction[] { Write,KernelSpinWait, FireAt, InvokeMethod, ResolveMethodPtr, ResolveMethod,InvokeDynamicMethod, setRecvDgate, setInterval, postMessage,free, weaken, malloc},code);
+            isrunning = false;
+            foreach (KeyValuePair<int, object> et in objPtrs)
+            {
+                Type mtype = et.Value.GetType();
+                MethodInfo dmthd = mtype.GetMethod("Dispose");
+                if (dmthd != null)
+                {
+                    dmthd.Invoke(et.Value, null);
+                }
+            }
+            
         }
        public JavaScriptVM vm;
         public void Initialize()

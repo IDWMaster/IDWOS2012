@@ -8,27 +8,117 @@ DrawShader = null;
 DrawTexture = null;
 PostMsg = null;
 ClearDrawing = null;
+GetFilesFunction = null;
+GetDirectoriesFunction = null;
+CreateFileFunction = null;
 currentID = 0;
-var threads = { hasInitialized : false };
+threads = { hasInitialized : false,length:0 };
 IDWOS = {
+    IO: {
+    ///<summary>Provides access to low-level IO operations</summary>
+        FileSystem: function () {
+            ///<summary>Mounts a new filesystem</summary>
+            this.ptr = InvokeMethod(10);
+            this.GetFiles = function () {
+                if (GetFilesFunction == null) {
+                    GetFilesFunction = ResolveMethod(this.ptr, 'GetFiles');
+                }
+                return InvokeDynamicMethod(this.ptr, GetFilesFunction);
+            }
+            this.GetDirectories = function () {
+                if (GetDirectoriesFunction == null) {
+                    GetDirectoriesFunction = ResolveMethod(this.ptr, 'GetDirectories');
+
+                }
+                return InvokeDynamicMethod(this.ptr, GetDirectoriesFunction);
+
+            }
+            this.CreateFile = function (filename) {
+                if (CreateFileFunction == null) {
+                    CreateFileFunction = ResolveMethod(this.ptr, 'CreateFile');
+                }
+                return InvokeDynamicMethod(this.ptr,CreateFileFunction, filename);
+            }
+
+
+        }
+        },
+    Input: {
+        OnKeyDown: function(keystroke) {
+        },
+        OnKeyUp:function(keystroke) {
+        },
+    ///<summary>Provides low-level access to input mechanisms</summary>
+        DispatchMessage: function (msg) {
+        ///<summary>Dispatches a message through the low-level message loop system
+            if (msg.OPCODE == 1) {
+                IDWOS.Input.OnKeyDown(msg.inputdata);
+               
+            }
+            if (msg.OPCODE == 2) {
+                IDWOS.Input.OnKeyUp(msg.inputdata);
+            }
+        },
+        
+        ReadLine: function (callback) {
+           
+            var istr = '';
+           
+            function doi(keystroke) {
+                var cd = false;
+                IDWOS.Threading.ThreadContext.SendMsg({ opcode: 0, text: keystroke });
+                if (keystroke == '\b') {
+                    istr = istr.substring(0, istr.length - 1);
+                    cd = true;
+
+
+                }
+                if (keystroke == '\n') {
+                    cd = true;
+                    IDWOS.Input.OnKeyDown = function (keystroke) {
+                    };
+                    callback(istr);
+                    
+                }
+                if (!cd) {
+                    istr += keystroke;
+                }
+            }
+            
+            IDWOS.Input.OnKeyDown = doi;
+        }
+        },
+    Kernel: {
+    ///<summary>Provides low-level access to kernel-mode operations via pre-defined opcodes</summary>
+        OPCODE: {
+            OUTPUT_PRINT: 0,
+            INPUT_KEYDOWN: 1,
+            INPUT_KEYUP: 2,
+            NTFY_EXIT: 3,
+            CREATE_SYSTHREAD: 4,
+            GET_FILES: 5,
+            GET_FILES_COMPLETE: 6,
+            CREATE_FILE:7
+        }
+    },
     Threading: {
     ///<summary>Provides multitasking functionality in a JavaScript environment</summary>
         ThreadContext: {
-        
-            
+
+
             Initialize: function (data) {
-            ///<summary>Initializes a threading context for a worker thread</summary>
-            ///<param name="data">The data parameter passed into this thread's starter function</param>
+                ///<summary>Initializes a threading context for a worker thread</summary>
+                ///<param name="data">The data parameter passed into this thread's starter function</param>
                 KernelThreadID = data.ThreadID;
             },
             SendMsg: function (data) {
-            ///<summary>Sends a notification to the kernel</summary>
-            ///<param name="data">Data to be sent to the kernel</param>
+                ///<summary>Sends a notification to the kernel</summary>
+                ///<param name="data">Data to be sent to the kernel</param>
                 data.ThreadID = KernelThreadID;
                 postMessage(data);
             }
-            },
-    Thread: function (scriptURL, threadSecurity) {
+        },
+        Thread: function (scriptURL, threadSecurity) {
             ///<summary>Creates a new thread</summary>
             ///<param name="scriptURL">The relative URL of the script to execute</param>
             ///<param name="threadSecurity">true if the thread handles potentially sensitive information and needs to run on the local machine, false if the thread should be allowed to run on any machine.</param>
@@ -39,11 +129,12 @@ IDWOS = {
             var threadID = currentID;
             currentID++;
             threads[threadID] = this;
+            threads.length++;
             if (!threads.hasInitialized) {
                 setRecvDgate(function (data) {
-                   
+
                     threads[data.ThreadID].OnDataReceived(data);
-                    
+
                 });
                 threads.hasInitialized = true;
             }
@@ -52,19 +143,23 @@ IDWOS = {
                 ///<param name="data">Serializable data to send to the remote thread</param>
                 data.ThreadID = threadID;
                 if (PostMsg == null) {
-                    PostMsg = ResolveMethod(this.ptr,'postMessage');
+                    PostMsg = ResolveMethod(this.ptr, 'postMessage');
                 }
                 InvokeDynamicMethod(this.ptr, PostMsg, data);
-                
+
             }
             var mvent = null;
-            
+            this.SendMsg = function (data) {
+                ///<summary>Sends an interrupt signal to the thread</summary>
+                ///<param name="data">Serializable data to send to the remote thread</param>
+                InvokeDynamicMethod(this.ptr, PostMsg, data);
+            }
         }
     },
     Graphics: {
-        DrawingContext:function(bitmap) {
-        ///<summary>Creates a drawing context from a specified bitmap</summary>
-        ///<param name="bitmap" type="IDWOS.Graphics.Bitmap">The bitmap to create the context from</param>
+        DrawingContext: function (bitmap) {
+            ///<summary>Creates a drawing context from a specified bitmap</summary>
+            ///<param name="bitmap" type="IDWOS.Graphics.Bitmap">The bitmap to create the context from</param>
             this.ptr = InvokeMethod(6, bitmap.ptr);
         },
         Camera: function (_renderer) {
@@ -77,12 +172,12 @@ IDWOS = {
 
         },
         Bitmap: function (filename) {
-        ///<summary>Creates a bitmap from a specified filename in system storage, or from a specified width and height</summary>
-        ///<param name="filename">The filename, or a valid width and height</param>
+            ///<summary>Creates a bitmap from a specified filename in system storage, or from a specified width and height</summary>
+            ///<param name="filename">The filename, or a valid width and height</param>
             if (arguments.length == 1) {
                 this.ptr = InvokeMethod(1, filename);
             }else {
-             
+
                 this.ptr = InvokeMethod(7, arguments[0], arguments[1]);
             }
         },
@@ -93,16 +188,16 @@ IDWOS = {
             this.ptr = InvokeDynamicMethod(renderer.ptr, CreateShaderFunction);
         },
         Texture2D: function (renderer, bitmap) {
-        ///<summary>Creates a Texture2D from a bitmap</summary>
-        ///<param name="renderer">The renderer</param>
-        
-          
-                if (LoadTexture == null) {
-                    LoadTexture = ResolveMethod(renderer.ptr, 'createTextureFromBitmap');
+            ///<summary>Creates a Texture2D from a bitmap</summary>
+            ///<param name="renderer">The renderer</param>
 
-                }
-                this.ptr = InvokeDynamicMethod(renderer.ptr, LoadTexture, bitmap.ptr);
-            
+
+            if (LoadTexture == null) {
+                LoadTexture = ResolveMethod(renderer.ptr, 'createTextureFromBitmap');
+
+            }
+            this.ptr = InvokeDynamicMethod(renderer.ptr, LoadTexture, bitmap.ptr);
+
         },
         VertexBuffer: function (renderer, vertices, texcoords, normals) {
             this.ptr = InvokeMethod(2, renderer.ptr, vertices, texcoords, normals);

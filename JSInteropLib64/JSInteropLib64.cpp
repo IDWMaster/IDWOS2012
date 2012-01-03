@@ -1,4 +1,5 @@
-// JSInteropLib64.cpp : Defines the exported functions for the DLL application.
+// Hypervisor (using v8 and .NET as VM engines)
+//Full source code is available at https://github.com/IDWMaster/IDWOS2012
 #include "stdafx.h"
 #pragma comment(lib, "wsock32.lib")
 //Could'a used a.....
@@ -149,7 +150,7 @@ public:
 		}
 
 	VMInstance() {
-	memallocator = new MemAllocator(1024*1024*5);
+	memallocator = new MemAllocator(1024);
 	cptr_int = 0;
 	}
 
@@ -287,8 +288,11 @@ public:
 	   Handle<String> srccode = String::New(source);
 	   Handle<Script> script = Script::Compile(srccode);
 	   script->Run();
-	   
+
 	   context.Dispose();
+	   delete memallocator;
+
+	   delete this;
 	}
 };
 
@@ -307,7 +311,9 @@ extern "C" {
 			instance->jsFuncPtrs[ptr].mfunc.Dispose();
 			instance->jsFuncPtrs.erase(ptr);
 		}
-		
+		__declspec(dllexport) void __cdecl ExpandMemory(VMInstance* instance, unsigned long long size) {
+			instance->memallocator->createSegment(size);
+		}
 	__declspec(dllexport) void* __cdecl NativeAlloc(VMInstance* instance,int32_t count) {
 		//Allocate in chunks of 1024 bytes
 		//starting at 1024

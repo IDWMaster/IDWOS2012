@@ -10,6 +10,7 @@ using _3DLib_OpenGL;
 using System.Drawing;
 using System.Reflection;
 using DirectXLib;
+using IC80v3;
 namespace JSTester
 {
    
@@ -122,8 +123,10 @@ namespace JSTester
         }
         class ManagedGraphics : IDisposable
         {
+            Bitmap imap;
             public ManagedGraphics(Bitmap mmap)
             {
+                imap = mmap;
                 mfix = Graphics.FromImage(mmap);
             }
             public void Clear(int a, int r, int b, int g)
@@ -132,11 +135,26 @@ namespace JSTester
             }
             public void DrawString(int a, int r, int g, int b, string text, float size, int x, int y)
             {
-                mfix.DrawString(text, new Font(FontFamily.GenericMonospace, size), new SolidBrush(Color.FromArgb(a, r, g, b)), new PointF(x, y));
+                Font mfont = new Font(FontFamily.GenericMonospace, size);
+                SizeF msize = mfix.MeasureString(text+"_", mfont);
+                msize.Height += y;
+                int cy = y;
+                if (msize.Height > imap.Height-95)
+                {
+                    cy -= ((int)msize.Height-imap.Width)+95;
+                }
+                
+                SolidBrush mbrush = new SolidBrush(Color.FromArgb(a, r, g, b));
+                mfix.DrawString(text, mfont, mbrush, new PointF(x, cy));
+                mbrush.Dispose();
+                mfont.Dispose();
+
             }
             public void FillRect(int a, int r, int g, int b, int x, int y, int w, int h)
             {
-                mfix.FillRectangle(new SolidBrush(Color.FromArgb(a, r, g, b)), new Rectangle(x, y, w, h));
+                SolidBrush mbrush = new SolidBrush(Color.FromArgb(a, r, g, b));
+                mfix.FillRectangle(mbrush, new Rectangle(x, y, w, h));
+                mbrush.Dispose();
             }
             public void DrawImage(Bitmap mmap, int x, int y, int width, int height)
             {
@@ -242,17 +260,84 @@ namespace JSTester
             dgate_keyup = funcptr;
 
         }
+        class ManagedStream
+        {
+            Stream _underlyingstream;
+            public ManagedStream(Stream internstream)
+            {
+                _underlyingstream = internstream;
+
+            }
+            public void Dispose()
+            {
+                _underlyingstream.Dispose();
+            }
+        }
+        class ManagedFS
+        {
+            IndexedFS underlyingFS;
+            public ManagedFS()
+            {
+                
+                underlyingFS = new IndexedFS(new Filesystem(File.Open("filesystem", FileMode.OpenOrCreate, FileAccess.ReadWrite), 1024 * 1024 * 5, 1024 * 1024 * 50));
+                
+            }
+            public void Dispose()
+            {
+                underlyingFS.Dispose();
+            }
+            public void CreateFile(string filename)
+            {
+                underlyingFS.CreateFile(filename);
+
+            }
+            public ManagedStream OpenFile(string filename)
+            {
+                return new ManagedStream(underlyingFS.OpenFile(filename));
+            }
+            public object[] GetDirectories()
+            {
+                List<object> directories = new List<object>();
+                foreach (string et in underlyingFS.Directories)
+                {
+                    directories.Add(et);
+                }
+                return directories.ToArray();
+
+            }
+            public object[] GetFiles()
+            {
+                List<object> files = new List<object>();
+                foreach (string et in underlyingFS.Files)
+                {
+                    files.Add(et);
+                }
+                foreach (string et in Directory.GetFiles(Environment.CurrentDirectory))
+                {
+                    files.Add(et.Substring(et.LastIndexOf("\\")+1));
+                }
+                return files.ToArray();
+            }
+        }
+        /// <summary>
+        /// OPCODE 10
+        /// </summary>
+        /// <returns></returns>
+        static ManagedFS CreateFS()
+        {
+            return new ManagedFS();
+        }
         static void Main(string[] args)
         {
             Console.WriteLine("DistVM - Secure Execution Environment");
             
             StreamReader mreader = new StreamReader("IDWOS.js");
 
-            mnul.TranslatedFunctions.AddRange(new MethodInfo[] { ResolveMethod("CreateRenderer"), ResolveMethod("CreateBitmap"),ResolveMethod("CreateVertexBuffer"), ResolveMethod("RotateBuffer"), ResolveMethod("SetCameraPosition"),ResolveMethod("createThread"), ResolveMethod("CreateGraphics"),ResolveMethod("createBitmapFromWidthHeight"), ResolveMethod("onKeyPress"),ResolveMethod("onKeyUp") });
+            mnul.TranslatedFunctions.AddRange(new MethodInfo[] { ResolveMethod("CreateRenderer"), ResolveMethod("CreateBitmap"),ResolveMethod("CreateVertexBuffer"), ResolveMethod("RotateBuffer"), ResolveMethod("SetCameraPosition"),ResolveMethod("createThread"), ResolveMethod("CreateGraphics"),ResolveMethod("createBitmapFromWidthHeight"), ResolveMethod("onKeyPress"),ResolveMethod("onKeyUp"),ResolveMethod("CreateFS") });
             mnul.Initialize();
             vm = mnul.vm;
             string code = Link(mreader.ReadToEnd() + "\nmain();");
-            
+      
             mnul.Run(code);
             
         }

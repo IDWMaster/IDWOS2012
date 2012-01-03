@@ -6,7 +6,7 @@
 
 
 
-
+//Kernel running in ring 0
 
 
 
@@ -59,8 +59,7 @@ function main() {
         FireAt(10, dorender);
 
     }
-    var workerthread = new IDWOS.Threading.Thread('webworker.js',true);
-    
+  
     var intervalID = null;
     var ourID = currentID;
   
@@ -69,6 +68,7 @@ function main() {
    
     var ltxt = '=====================================================\nIDWOS 2012 Runtime Environment\n=====================================================';
     ltxt += '\nDISCLAIMER: THIS SYSTEM CURRENTLY SUPPORTS ONLY ENGLISH KEYBOARDS.\nI do not currently have the budget to hire people who could implement this for other keyboard types.\nIf you are offended by the lack of support for your keyboard, please\ncontribute your keyboard layout at https://github.com/IDWMaster/IDWOS2012\nor e-mail webadm@elcnet.servehttp.com.\n';
+    var currentFS = new IDWOS.IO.FileSystem();
     var ison = true;
     var doupdate = function () {
         var kernelIOBitmap = new IDWOS.Graphics.Bitmap(1024, 1024);
@@ -88,42 +88,143 @@ function main() {
         
     };
     setInterval(doupdate, 200);
-    
+    var workerthread = new IDWOS.Threading.Thread('webworker.js', true);
     var keyDownInterrupt = function (keyname) {
-        
+        var keyval = '';
         var signal = false;
         if (keyname == 'Back') {
             signal = true;
-            ltxt = ltxt.substring(0, ltxt.length - 1);
+            keyval = '\b';
         }
         if (keyname == 'Space') {
             signal = true;
-            ltxt += ' ';
+            keyval = ' ';
         }
         if (keyname == 'Enter') {
             signal = true;
-            ltxt += '\n';
+            keyval = '\n';
+        }
+        if (keyname.indexOf('0') > -1) {
+            signal = true;
+            keyval = '0';
+        }
+        if (keyname.indexOf('1') > -1) {
+            signal = true;
+            keyval = '1';
+        }
+        if (keyname.indexOf('2') > -1) {
+            signal = true;
+            keyval = '2';
+        }
+        if (keyname.indexOf('3') > -1) {
+            signal = true;
+            keyval = '3';
+        }
+        if (keyname.indexOf('4') > -1) {
+            signal = true;
+            keyval = '4';
+        }
+        if (keyname.indexOf('5') > -1) {
+            signal = true;
+            keyval = '5';
+        }
+        if (keyname.indexOf('6') > -1) {
+            signal = true;
+            keyval = '6';
+        }
+        if (keyname.indexOf('7') > -1) {
+            signal = true;
+            keyval = '7';
+        }
+        if (keyname.indexOf('8') > -1) {
+            signal = true;
+            keyval = '8';
+        }
+        if (keyname.indexOf('9') > -1) {
+            signal = true;
+            keyval = '9';
+        }
+        if (keyname.toLowerCase().indexOf('shift') > -1) {
+            signal = true;
+            shiftkeydown = true;
+            
         }
         if (!signal) {
-            ltxt += keyname.toLowerCase();
+            if (shiftkeydown) {
+                keyval = keyname.toUpperCase();
+            }else {
+                keyval = keyname.toLowerCase();
+               
+            }
         }
         doupdate();
+
+        workerthread.SendMsg({ OPCODE: IDWOS.Kernel.OPCODE.INPUT_KEYDOWN, inputdata: keyval });
     }
     var keyUpInterrupt = function (keyname) {
-
+        var signal = false;
+        if (keyname.toLowerCase().indexOf('shift') > -1) {
+            shiftkeydown = false;
+            signal = true;
+        }
     }
     InvokeMethod(8, keyDownInterrupt);
-    
+    InvokeMethod(9, keyUpInterrupt);
     //END KERNEL INPUT/OUTPUT LOGIC
-    workerthread.OnDataReceived = function (data) {
-    //Kernel request -- Write to console
-       
+   
+ 
+    var datrecv = function (data) {
+        //Kernel request -- Write to console
+
         if (data.opcode == 0) {
+            if (data.text == '\b') {
+                ltxt = ltxt.substring(0, ltxt.length - 1);
+                doupdate();
+                return;
+            }
             ltxt += data.text;
             doupdate();
         }
+        if (data.opcode == 3) {
+
+            delete threads[data.ThreadID];
+            threads.length -= 1;
+            if (threads.length == 0) {
+                Shutdown();
+            }
+        }
+        if (data.opcode == 4) {
+            var files = currentFS.GetFiles();
+            var found = false;
+            for (var i = 0; i < files.length; i++) {
+                if (files[i] == data.sourcefile) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                var tthread = new IDWOS.Threading.Thread(data.sourcefile);
+                tthread.OnDataReceived = datrecv;
+                tthread.Start({ arguments: data.arguments });
+            }else {
+                ltxt += 'ERR: Program '+data.sourcefile+' not found.\n$ ';
+            }
+        }
+        if (data.opcode == 5) {
+            var files = currentFS.GetFiles();
+            
+            threads[data.ThreadID].SendMsg({ OPCODE: 6, files: files });
+
+
+        }
+        if (data.opcode == 7) {
+            currentFS.CreateFile(data.filename);
+        }
     }
-    workerthread.Start({ arguments: 0 });
+    workerthread.OnDataReceived = datrecv;
     
+    workerthread.Start({ arguments: 0 });
+  
     InitEventLoop();
 }
+shiftkeydown = false;

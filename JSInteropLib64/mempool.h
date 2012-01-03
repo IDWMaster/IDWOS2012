@@ -1,28 +1,51 @@
 #ifndef MEMPOOL_H
 #define MEMPOOL_H
-#define platformptr long long
+#define platformptr unsigned long long
 #include <string>
 #include <vector>
 #include <v8stdint.h>
+
+struct memsegment {
+platformptr mem_begin;
+platformptr mem_end;
+};
 struct memregion {
-	size_t length;
-	size_t offset;
+	platformptr length;
+	platformptr offset;
+	memsegment* segment;
 	bool allocated;
 };
 class MemAllocator {
 public:
-	char* data;
+	std::vector<memsegment*> regions;
 	std::vector<memregion> memregions;
-
+	~MemAllocator() {
+		for(int i = 0;i<regions.size();i++) {
+			delete (char*)regions[i]->mem_begin;
+			delete regions[i];
+		}
+	}
 	MemAllocator(size_t dsize) {
 		memregion defaultregion;
 		defaultregion.allocated = false;
 		defaultregion.length = dsize;
 		defaultregion.offset = 0;
-		data = (char*)malloc(dsize);
+		memsegment* seg0 = new memsegment();
+		seg0->mem_begin = (platformptr)(char*)malloc(dsize);
+		seg0->mem_end = seg0->mem_begin+dsize;
+		defaultregion.segment = seg0;
+		regions.push_back(seg0);
 		memregions.push_back(defaultregion);
 	};
 	void unallocMem(void* ptr) {
+		//figure out data position
+		platformptr data;
+		for(int i = 0;i<regions.size();i++) {
+			if(((platformptr)ptr)>=regions[i]->mem_begin&((platformptr)ptr)<regions[i]->mem_end) {
+				data = regions[i]->mem_begin;
+			break;
+			}
+		}
 	for(int i = 0;i<memregions.size();i++) {
 		platformptr calculatedoffset = ((platformptr)data)+memregions[i].offset;
 		//platformptr calculatedend = calculatedoffset+memregions[i].length;
@@ -33,40 +56,44 @@ public:
 	}
 	throw "MemoryNotFound";
 	}
-	void compact() {
-	//Look for any free space fragments which can "linked"
-		for(int i = 0;i<memregions.size()+1;i+=2) {
-			if(!memregions[i].allocated & !memregions[i+1].allocated) {
-				
-			}
-		}
+	
+	void createSegment(platformptr size) {
+	memregion defaultregion;
+		defaultregion.allocated = false;
+		defaultregion.length = size;
+		defaultregion.offset = 0;
+		memsegment* seg0 = new memsegment();
+		seg0->mem_begin = (platformptr)(char*)malloc(size);
+		seg0->mem_end = seg0->mem_begin+size;
+		defaultregion.segment = seg0;
+		regions.push_back(seg0);
+		memregions.push_back(defaultregion);
 	}
 	void* allocMem(size_t size) {
 		
-		bool hascompacted = false;
-		mcplr:
+	
+mcplr:
+
 		for(int i = 0;i<memregions.size();i++) {
 			if(!memregions[i].allocated & memregions[i].length>=size) {
 				size_t freedmem = memregions[i].length-size;
 				memregions[i].allocated = true;
 				memregions[i].length = size;
+				char* data = (char*)(void*)memregions[i].segment->mem_begin;
 				if(freedmem !=0) {
 				//Create a new block representing the free memory
 				memregion freedregion;
 				freedregion.allocated = false;
 				freedregion.length = freedmem;
-				
+				freedregion.segment = memregions[i].segment;
 				freedregion.offset = memregions[i].offset+memregions[i].length;
 				memregions.push_back(freedregion);
 				}
 				return data+memregions[i].offset;
 			}
 		}
-		if(!hascompacted) {
-			compact();
-			hascompacted = true;
-			goto mcplr;
-		}
+		createSegment(size*20);
+		goto mcplr;
 		throw "InsufficientMemory";
 	}
 
